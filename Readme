@@ -1,0 +1,33 @@
+# Data Cleaning and Visualization Tool
+
+This is a web application that allows users to upload datasets, clean the data by removing duplicates or handling missing values, and visualize the cleaned data using various chart types. The backend is powered by Flask, and the frontend is developed using React.
+
+## Features
+
+- **Upload Datasets:** Users can upload datasets in CSV format.
+- **Data Cleaning Options:** Users can choose to remove duplicates, handle missing values by filling forward or backward, and replace 'NA' and empty strings with NaN.
+- **Data Visualization:** Users can visualize the cleaned data using bar charts, line charts, and pie charts.
+- **Download Cleaned Data:** Users can download the cleaned data as a CSV file.
+
+## Technologies Used
+
+- **Backend:** Flask
+- **Frontend:** React
+- **Charting Library:** Chart.js
+- **Styling:** CSS
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js and npm
+- Python 3.x
+- Git
+
+### Installation
+
+1. **Clone the repository:**
+
+   ```bash
+   git clone https://github.com/boinpallypraneeth/data-cleaning-tool.git
+   cd data-cleaning-tool
