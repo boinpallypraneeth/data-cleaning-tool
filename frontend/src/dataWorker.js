@@ -1,7 +1,7 @@
 /* eslint-disable no-restricted-globals */
 
 self.onmessage = function(e) {
-    const { data, action } = e.data;
+    const { action, data } = e.data;
   
     if (action === 'processData') {
       const processedData = processData(data);
@@ -10,7 +10,9 @@ self.onmessage = function(e) {
   };
   
   function processData(data) {
-    // Perform your data processing here
-    return data; // Return processed data
+    // Implement your data processing logic here if needed
+    return data;
   }
+  
+  /* eslint-enable no-restricted-globals */
   

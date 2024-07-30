@@ -16,31 +16,34 @@ def upload_file():
 
     try:
         df = pd.read_csv(file)
-        cleaned_df = clean_data(df)
+        return df.to_json(orient='records')
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/clean', methods=['POST'])
+def clean_file():
+    data = request.json.get('data')
+    options = request.json.get('options')
+
+    try:
+        df = pd.DataFrame(data)
+        cleaned_df = clean_data(df, options)
         return cleaned_df.to_json(orient='records')
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-def clean_data(df):
-    # Remove duplicates
-    df.drop_duplicates(inplace=True)
+def clean_data(df, options):
+    if options.get('removeDuplicates', False):
+        df.drop_duplicates(inplace=True)
 
-    # Replace 'NA' and empty strings with NaN
-    df.replace(['NA', ''], pd.NA, inplace=True)
+    if options.get('fillForward', False):
+        df.fillna(method='ffill', inplace=True)
 
-    # Fill forward missing values
-    df.fillna(method='ffill', inplace=True)
+    if options.get('fillBackward', False):
+        df.fillna(method='bfill', inplace=True)
 
-    # Fill backward remaining missing values if any
-    df.fillna(method='bfill', inplace=True)
-
-    # Standardize date format if 'date' column exists
-    if 'date' in df.columns:
+    if options.get('standardizeDates', False) and 'date' in df.columns:
         df['date'] = pd.to_datetime(df['date'], errors='coerce').dt.strftime('%Y-%m-%d')
-
-    # Ensure all numeric columns are numbers
-    for col in df.select_dtypes(include=['object']).columns:
-        df[col] = pd.to_numeric(df[col], errors='ignore')
 
     return df
 

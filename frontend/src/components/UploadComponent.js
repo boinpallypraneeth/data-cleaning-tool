@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import * as XLSX from 'xlsx';
 import axios from 'axios';
 
 function UploadComponent({ onFileUpload }) {

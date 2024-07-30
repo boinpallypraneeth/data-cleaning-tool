@@ -1,22 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 function DataCleaningComponent({ data, onCleanData }) {
+  const [options, setOptions] = useState({
+    removeDuplicates: true,
+    fillForward: true,
+    fillBackward: true,
+    standardizeDates: true,
+  });
+
+  const handleOptionChange = (e) => {
+    const { name, checked } = e.target;
+    setOptions(prevOptions => ({
+      ...prevOptions,
+      [name]: checked,
+    }));
+  };
+
   const handleCleanData = () => {
-    if (!data || data.length === 0) return;
-
-    let previousRow = {};
-    const cleanedData = data.map(item => {
-      const newRow = { ...item };
-      for (const key in newRow) {
-        if (newRow[key] === '' || newRow[key] === null || newRow[key] === undefined || newRow[key] === 'NA') {
-          newRow[key] = previousRow[key];
-        }
-      }
-      previousRow = newRow;
-      return newRow;
+    fetch('http://localhost:5000/clean', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ data, options }),
+    })
+    .then(response => response.json())
+    .then(cleanedData => {
+      onCleanData(cleanedData);
+    })
+    .catch(error => {
+      console.error('Error cleaning data:', error);
     });
-
-    onCleanData(cleanedData);
   };
 
   const downloadCSV = (data) => {
@@ -34,6 +48,44 @@ function DataCleaningComponent({ data, onCleanData }) {
 
   return (
     <div className="data-cleaning-component">
+      <div className="options">
+        <label>
+          <input
+            type="checkbox"
+            name="removeDuplicates"
+            checked={options.removeDuplicates}
+            onChange={handleOptionChange}
+          />
+          Remove Duplicates
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            name="fillForward"
+            checked={options.fillForward}
+            onChange={handleOptionChange}
+          />
+          Fill Forward Missing Values
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            name="fillBackward"
+            checked={options.fillBackward}
+            onChange={handleOptionChange}
+          />
+          Fill Backward Missing Values
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            name="standardizeDates"
+            checked={options.standardizeDates}
+            onChange={handleOptionChange}
+          />
+          Standardize Date Formats
+        </label>
+      </div>
       <button onClick={handleCleanData}>Clean Data</button>
       <button onClick={() => downloadCSV(data)}>Download Cleaned Data</button>
     </div>

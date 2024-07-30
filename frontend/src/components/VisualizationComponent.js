@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Bar, Line, Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Tooltip, Legend, ArcElement } from 'chart.js';
 
@@ -31,30 +31,7 @@ function VisualizationComponent({ data }) {
   const [selectedLabel, setSelectedLabel] = useState(null);
   const workerRef = useRef(null);
 
-  useEffect(() => {
-    if (typeof Worker !== 'undefined') {
-      workerRef.current = new Worker(new URL('../dataWorker.js', import.meta.url)); // Correct path here
-      workerRef.current.onmessage = (e) => {
-        const { action, data } = e.data;
-        if (action === 'processedData') {
-          setProcessedData(data);
-        }
-      };
-    }
-    return () => {
-      if (workerRef.current) {
-        workerRef.current.terminate();
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (data && data.length > 0) {
-      workerRef.current.postMessage({ action: 'processData', data });
-    }
-  }, [data]);
-
-  const setProcessedData = (data) => {
+  const setProcessedData = useCallback((data) => {
     const columns = Object.keys(data[0]);
     const numericColumns = columns.filter(key => !isNaN(data[0][key]));
 
@@ -142,7 +119,30 @@ function VisualizationComponent({ data }) {
         intersect: true,
       },
     });
-  };
+  }, [chartType, chartData]);
+
+  useEffect(() => {
+    if (typeof Worker !== 'undefined') {
+      workerRef.current = new Worker(new URL('../dataWorker.js', import.meta.url)); // Correct path here
+      workerRef.current.onmessage = (e) => {
+        const { action, data } = e.data;
+        if (action === 'processedData') {
+          setProcessedData(data);
+        }
+      };
+    }
+    return () => {
+      if (workerRef.current) {
+        workerRef.current.terminate();
+      }
+    };
+  }, [setProcessedData]);
+
+  useEffect(() => {
+    if (data && data.length > 0) {
+      workerRef.current.postMessage({ action: 'processData', data });
+    }
+  }, [data]);
 
   const handleLabelClick = (label) => {
     setSelectedLabel(label);
@@ -165,9 +165,9 @@ function VisualizationComponent({ data }) {
         </select>
       </div>
       <div className="chart-layout">
-        {chartType !== 'pie' && (
+        {chartType !== 'pie' && chartData && (
           <div className="chart-labels">
-            {chartData && chartData.labels.map((label, index) => (
+            {chartData.labels.map((label, index) => (
               <div
                 key={index}
                 className={`chart-label ${label === selectedLabel ? 'selected' : ''}`}
